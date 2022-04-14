@@ -1,0 +1,3 @@
+[submodule "nmea"]
+	path = nmea
+	url = git@github.com:pcdangio/nmea.git
