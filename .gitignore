@@ -1,5 +1,8 @@
 # Ignore build files.
 build/
 
+# Ignore documentation.
+doc/
+
 # Ignore IDE files.
 .vscode/
