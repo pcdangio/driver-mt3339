@@ -4,7 +4,7 @@ using namespace mt3339;
 
 // CONSTRUCTORS
 driver::driver()
-    : m_response("PMTK", "000"),
+    : m_response(std::string("PMTK"), std::string("000")),
       m_response_timeout(0.250)
 {}
 
@@ -219,7 +219,7 @@ void driver::receive(const std::string& nmea_string)
     }
     
     // Parse NMEA string into NMEA sentence.
-    nmea::sentence nmea_sentence(nmea_string, true);
+    nmea::sentence nmea_sentence(nmea_string);
 
     // Check talker.
     if(nmea_sentence.talker() == "PMTK")
