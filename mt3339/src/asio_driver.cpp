@@ -2,6 +2,7 @@
 
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 
 #include <stdexcept>
 
@@ -84,6 +85,9 @@ void asio_driver::transmit(const std::string& nmea_string)
 // SERIAL
 void asio_driver::run()
 {
+    // Create work guard to stop io_context::run from exiting when it has no more handlers.
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard(asio_driver::m_io_context.get_executor());
+    
     // Run the io_context event loop.
     // NOTE: io_context::stop will force this to stop blocking.
     asio_driver::m_io_context.run();
