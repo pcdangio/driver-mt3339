@@ -43,6 +43,9 @@ void asio_driver::start(const std::string& port, mt3339::baud_rate baud_rate)
     // Start the io_context thread.
     asio_driver::m_thread = std::thread(&asio_driver::run, this);
 
+    // Give time for serial port to spin up, and for run thread to start.
+    std::this_thread::sleep_for(std::chrono::duration<double>(0.25));
+
     // Start asynchronously receiving.
     asio_driver::async_receive();
 }
