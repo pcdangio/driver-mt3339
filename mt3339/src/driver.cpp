@@ -256,7 +256,7 @@ void driver::receive(const std::string& nmea_string)
         // Lock callback thread protection.
         driver::m_mutex_callbacks.lock();
 
-        if(driver::m_callback_gga && nmea_sentence.talker() == "GGA")
+        if(driver::m_callback_gga && nmea_sentence.type() == "GGA")
         {
             // Parse GGA message.
             nmea::gga gga(nmea_sentence);
@@ -264,7 +264,7 @@ void driver::receive(const std::string& nmea_string)
             // Raise callback.
             driver::m_callback_gga(std::ref(gga));
         }
-        else if(driver::m_callback_gll && nmea_sentence.talker() == "GLL")
+        else if(driver::m_callback_gll && nmea_sentence.type() == "GLL")
         {
             // Parse GLL message.
             nmea::gll gll(nmea_sentence);
@@ -272,7 +272,7 @@ void driver::receive(const std::string& nmea_string)
             // Raise callback.
             driver::m_callback_gll(std::ref(gll));
         }
-        else if(driver::m_callback_gsa && nmea_sentence.talker() == "GSA")
+        else if(driver::m_callback_gsa && nmea_sentence.type() == "GSA")
         {
             // Parse GSA message.
             nmea::gsa gsa(nmea_sentence);
@@ -280,7 +280,7 @@ void driver::receive(const std::string& nmea_string)
             // Raise callback.
             driver::m_callback_gsa(std::ref(gsa));
         }
-        else if(driver::m_callback_gsv && nmea_sentence.talker() == "GSV")
+        else if(driver::m_callback_gsv && nmea_sentence.type() == "GSV")
         {
             // Parse GSV message.
             nmea::gsv gsv(nmea_sentence);
@@ -288,7 +288,7 @@ void driver::receive(const std::string& nmea_string)
             // Raise callback.
             driver::m_callback_gsv(std::ref(gsv));
         }
-        else if(driver::m_callback_rmc && nmea_sentence.talker() == "RMC")
+        else if(driver::m_callback_rmc && nmea_sentence.type() == "RMC")
         {
             // Parse RMC message.
             nmea::rmc rmc(nmea_sentence);
@@ -296,7 +296,7 @@ void driver::receive(const std::string& nmea_string)
             // Raise callback.
             driver::m_callback_rmc(std::ref(rmc));
         }
-        else if(driver::m_callback_vtg && nmea_sentence.talker() == "VTG")
+        else if(driver::m_callback_vtg && nmea_sentence.type() == "VTG")
         {
             // Parse VTG message.
             nmea::vtg vtg(nmea_sentence);
@@ -304,7 +304,7 @@ void driver::receive(const std::string& nmea_string)
             // Raise callback.
             driver::m_callback_vtg(std::ref(vtg));
         }
-        else if(driver::m_callback_zda && nmea_sentence.talker() == "ZDA")
+        else if(driver::m_callback_zda && nmea_sentence.type() == "ZDA")
         {
             // Parse ZDA message.
             nmea::zda zda(nmea_sentence);
