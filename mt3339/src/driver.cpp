@@ -4,7 +4,7 @@ using namespace mt3339;
 
 // CONSTRUCTORS
 driver::driver()
-    : m_response(std::string("PMTK"), std::string("000")),
+    : m_response(nullptr),
       m_response_timeout(0.250)
 {}
 
@@ -20,7 +20,18 @@ bool driver::connected()
     // Wait for PMTK_DT_RELEASE (705) with condition variable and timeout.
     // NOTE: The wait_for method returns true IFF the response was received and matches the requested sentence type.
     std::unique_lock<std::mutex> unique_lock(driver::m_mutex_response);
-    return driver::m_condition_variable_response.wait_for(unique_lock, driver::m_response_timeout, [this]{return driver::m_response.type() == "705";});
+    if(!driver::m_condition_variable_response.wait_for(unique_lock, driver::m_response_timeout, [this]{return driver::m_response && driver::m_response->type() == "705";}))
+    {
+        // Response not received.
+        return false;
+    }
+
+    // Response received and mutex is locked.
+    
+    // Reset response.
+    driver::m_response.reset();
+
+    return true;
 }
 bool driver::set_baud(mt3339::baud_rate baud)
 {
@@ -34,7 +45,7 @@ bool driver::set_baud(mt3339::baud_rate baud)
     transmit(nmea_sentence.nmea_string());
 
     // Get ACK.
-    return driver::wait_ack("251");
+    return driver::get_ack("251");
 }
 bool driver::set_rate(double frequency)
 {
@@ -51,7 +62,7 @@ bool driver::set_rate(double frequency)
     transmit(nmea_sentence.nmea_string());
 
     // Get ACK.
-    return driver::wait_ack("300");
+    return driver::get_ack("300");
 }
 bool driver::set_outputs()
 {
@@ -101,7 +112,7 @@ bool driver::set_outputs()
     transmit(nmea_sentence.nmea_string());
 
     // Wait for PMTK ACK.
-    bool result = driver::wait_ack("314");
+    bool result = driver::get_ack("314");
 
     // Unlock callback thread protection.
     driver::m_mutex_callbacks.unlock();
@@ -230,7 +241,7 @@ void driver::receive(const std::string& nmea_string)
         driver::m_mutex_response.lock();
 
         // Set response.
-        driver::m_response = nmea_sentence;
+        driver::m_response.reset(new nmea::sentence(nmea_sentence));
 
         // Unlock thread protection.
         driver::m_mutex_response.unlock();
@@ -306,12 +317,23 @@ void driver::receive(const std::string& nmea_string)
         driver::m_mutex_callbacks.unlock();
     }
 }
-bool driver::wait_ack(const std::string& command)
+bool driver::get_ack(const std::string& command)
 {
     // Wait for PMTK_ACK (001) on the specified command with condition variable and timeout.
     std::unique_lock<std::mutex> unique_lock(driver::m_mutex_response);
-    bool received = driver::m_condition_variable_response.wait_for(unique_lock, driver::m_response_timeout, [this, command]{return driver::m_response.type() == "001" && driver::m_response.get_field(0) == command;});
+    if(!driver::m_condition_variable_response.wait_for(unique_lock, driver::m_response_timeout, [this, command]{return driver::m_response && driver::m_response->type() == "001" && driver::m_response->get_field(0) == command;}))
+    {
+        // Wait timed out.
+        return false;
+    }
+
+    // ACK received and response mutex is still locked.
 
     // Check if the ACK command indicates action succeeded.
-    return driver::m_response.get_field(1) == "3";
+    bool success = driver::m_response->get_field(1) == "3";
+
+    // Clear the ACK response.
+    driver::m_response.reset();
+
+    return success;
 }

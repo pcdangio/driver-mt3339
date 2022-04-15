@@ -87,7 +87,7 @@ protected:
 private:
     // RESPONSE
     /// \brief Stores the last received response from the MT3339.
-    nmea::sentence m_response;
+    std::unique_ptr<nmea::sentence> m_response;
     /// \brief The timeout to wait for responses from the MT3339.
     std::chrono::duration<double> m_response_timeout;
     /// \brief Provides thread protection for response variables.
@@ -117,7 +117,7 @@ private:
     /// \brief Waits for an ACK response from the MT3339 for a specific command.
     /// \param command The command to wait for an ACK response on.
     /// \returns TRUE if the ACK response indicated success, otherwise FALSE.
-    bool wait_ack(const std::string& command);
+    bool get_ack(const std::string& command);
 };
 
 }
