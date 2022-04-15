@@ -48,9 +48,9 @@ private:
     /// \brief The serial port for communicating with the MT3339.
     boost::asio::serial_port m_serial_port;
     /// \brief The RX buffer for read operations.
-    std::vector<uint8_t> m_rx_buffer;
+    std::string m_rx_buffer;
     /// \brief The TX buffer for write operations.
-    std::vector<uint8_t> m_tx_buffer;
+    std::string m_tx_buffer;
     /// \brief Starts an asynchronous read operation on the serial port.
     void async_receive();
     /// \brief Handles data received from asynchronous read operations.

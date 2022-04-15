@@ -74,6 +74,7 @@ void asio_driver::stop()
 void asio_driver::transmit(const std::string& nmea_string)
 {
     // Put string into TX buffer.
+    // Use assign to keep buffer's capacity.
     asio_driver::m_tx_buffer.assign(nmea_string.begin(), nmea_string.end());
 
     // Write to serial port.
@@ -100,9 +101,19 @@ void asio_driver::async_receive_callback(const boost::system::error_code& error,
     // Verify that error hasn't occured and that bytes were read.
     if(!error && bytes_read > 0)
     {
-        // Pass to base receive method.
-        asio_driver::receive(std::string(asio_driver::m_rx_buffer.begin(), asio_driver::m_rx_buffer.end()));
+        // String may contain extra characters before "$" delimiter.
+        // Try to find delimiter.
+        std::size_t start_index = asio_driver::m_rx_buffer.find_first_of('$');
+        // Check if delimiter was found, and that it exists before end of bytes_read.
+        if(start_index != std::string::npos && start_index < bytes_read)
+        {
+            // Extract relevant substring and pass to receive method.
+            asio_driver::receive(asio_driver::m_rx_buffer.substr(start_index, bytes_read - start_index));
+        }
     }
+
+    // Consume/clear bytes read since RX buffer is used as a dynamic buffer.
+    asio_driver::m_rx_buffer.erase(0, bytes_read);
 
     // Continue async reading.
     asio_driver::async_receive();
